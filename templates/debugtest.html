@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head><title>Debug Test</title></head>
+<body>
+  <h2>Upload Human Voice</h2>
+  <input type="file" id="human" accept=".wav,.mp3,.flac,.ogg,.m4a">
+  <button onclick="testFile('human')">Test Human</button>
+
+  <h2>Upload AI Voice</h2>
+  <input type="file" id="ai" accept=".wav,.mp3,.flac,.ogg,.m4a">
+  <button onclick="testFile('ai')">Test AI</button>
+
+  <h2>Result:</h2>
+  <pre id="output" style="background:#111;color:#0f0;padding:1rem;border-radius:8px;"></pre>
+
+  <script>
+    async function testFile(type) {
+      const input = document.getElementById(type);
+      if (!input.files[0]) { alert('Please select a file first'); return; }
+      const formData = new FormData();
+      formData.append('audio', input.files[0]);
+      const res = await fetch('http://localhost:5000/debug', { method: 'POST', body: formData });
+      const data = await res.json();
+      document.getElementById('output').textContent = type.toUpperCase() + ' VOICE:\n' + JSON.stringify(data, null, 2);
+    }
+  </script>
+</body>
+</html>

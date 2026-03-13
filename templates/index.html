@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Digital Audio Notary</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header>
+    <h1>🔏 Digital Audio Notary</h1>
+    <p>Multi-layer forensic analysis of audio authenticity</p>
+  </header>
+
+  <main>
+    <!-- Upload zone -->
+    <section class="upload-card" id="upload-zone">
+      <div class="drop-area" id="drop-area">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        <p>Drag & drop an audio file, or <label for="file-input" class="link">browse</label></p>
+        <p class="muted">WAV · MP3 · FLAC · OGG · M4A — max 50 MB</p>
+        <input type="file" id="file-input" accept=".wav,.mp3,.flac,.ogg,.m4a" hidden>
+      </div>
+      <div id="file-preview" class="hidden">
+        <span id="file-name"></span>
+        <button id="analyze-btn">Run Trust Audit</button>
+      </div>
+    </section>
+
+    <!-- Loading state -->
+    <section id="loading" class="hidden">
+      <div class="spinner"></div>
+      <p>Performing forensic analysis…</p>
+    </section>
+
+    <!-- Results -->
+    <section id="results" class="hidden">
+
+      <!-- Trust Score gauge -->
+      <div class="score-card">
+        <div class="gauge-wrap">
+          <svg viewBox="0 0 200 110" width="200">
+            <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#e2e8f0" stroke-width="16" stroke-linecap="round"/>
+            <path id="gauge-arc" d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#10b981" stroke-width="16" stroke-linecap="round"
+                  stroke-dasharray="251" stroke-dashoffset="251"/>
+          </svg>
+          <div class="score-center">
+            <span id="score-value">--</span>
+            <small>Trust Score</small>
+          </div>
+        </div>
+        <div id="verdict-badge" class="verdict-badge">--</div>
+      </div>
+
+      <!-- Sub-scores -->
+      <div class="sub-scores">
+        <div class="sub-score-item">
+          <span>Metadata Integrity</span>
+          <div class="bar-track"><div class="bar" id="bar-meta"></div></div>
+          <span id="val-meta">--</span>
+        </div>
+        <div class="sub-score-item">
+          <span>Biological Features</span>
+          <div class="bar-track"><div class="bar" id="bar-bio"></div></div>
+          <span id="val-bio">--</span>
+        </div>
+        <div class="sub-score-item">
+          <span>Splice Integrity</span>
+          <div class="bar-track"><div class="bar" id="bar-splice"></div></div>
+          <span id="val-splice">--</span>
+        </div>
+      </div>
+
+      <!-- Flags list -->
+      <div class="findings-card" id="flags-section">
+        <h3>Forensic Findings</h3>
+        <ul id="flags-list"></ul>
+      </div>
+
+      <!-- Bio metrics -->
+      <div class="metrics-grid">
+        <div class="metric-tile"><label>Pitch Jitter</label><span id="m-jitter">--</span></div>
+        <div class="metric-tile"><label>Shimmer</label><span id="m-shimmer">--</span></div>
+        <div class="metric-tile"><label>MFCC Variance</label><span id="m-mfcc">--</span></div>
+        <div class="metric-tile"><label>Voiced Fraction</label><span id="m-voiced">--</span></div>
+        <div class="metric-tile"><label>Silence Anomalies</label><span id="m-silence">--</span></div>
+        <div class="metric-tile"><label>Duration</label><span id="m-duration">--</span></div>
+      </div>
+
+      <!-- Spectrogram + MFCC images -->
+      <div class="plots-row">
+        <div><h4>Spectrogram</h4><img id="spectrogram-img" src="" alt="Spectrogram"/></div>
+        <div><h4>MFCC</h4><img id="mfcc-img" src="" alt="MFCC"/></div>
+      </div>
+
+    </section>
+
+    <!-- Speaker Verification Section -->
+    <section class="upload-card" id="speaker-verification-section">
+      <h2>🎙️ Speaker Verification</h2>
+      <p class="muted">Check whether the uploaded test audio matches the claimed speaker's reference voice.</p>
+
+      <div class="speaker-verify-grid">
+        <div class="speaker-box">
+          <label for="reference-audio"><strong>Reference Voice</strong></label>
+          <p class="muted">Upload a known genuine sample of the claimed speaker.</p>
+          <input type="file" id="reference-audio" accept=".wav,.mp3,.flac,.ogg,.m4a">
+        </div>
+
+        <div class="speaker-box">
+          <label for="test-audio"><strong>Test Audio</strong></label>
+          <p class="muted">Upload the audio clip that needs speaker verification.</p>
+          <input type="file" id="test-audio" accept=".wav,.mp3,.flac,.ogg,.m4a">
+        </div>
+      </div>
+
+      <div class="speaker-action-row">
+        <button id="verify-speaker-btn" type="button">Verify Speaker Identity</button>
+      </div>
+
+      <div id="speaker-loading" class="hidden">
+        <div class="spinner"></div>
+        <p>Comparing speaker identity…</p>
+      </div>
+
+      <div id="speaker-result" class="hidden">
+  <div class="score-card">
+    <div class="metrics-grid">
+      <div class="metric-tile">
+        <label>ECAPA Similarity</label>
+        <span id="speaker-ecapa">--</span>
+      </div>
+      <div class="metric-tile">
+        <label>MFCC Similarity</label>
+        <span id="speaker-mfcc">--</span>
+      </div>
+      <div class="metric-tile">
+        <label>Fused Similarity</label>
+        <span id="speaker-fused">--</span>
+      </div>
+      <div class="metric-tile">
+        <label>Threshold</label>
+        <span id="speaker-threshold">--</span>
+      </div>
+      <div class="metric-tile">
+        <label>Speaker Match</label>
+        <span id="speaker-match">--</span>
+      </div>
+      <div class="metric-tile">
+        <label>Verdict</label>
+        <span id="speaker-verdict">--</span>
+      </div>
+    </div>
+  </div>
+</div>
+    </section>
+
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

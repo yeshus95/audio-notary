@@ -1,0 +1,10 @@
+venv/
+pretrained_models/
+__pycache__/
+*.pyc
+uploads/
+static/plots/
+.cache/
+.env
+*.wav
+*.mp3
